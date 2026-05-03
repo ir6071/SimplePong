@@ -3,11 +3,18 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no" />
-  <title>SimplePong</title>
+  <title>SimplePong 3D</title>
   <link rel="stylesheet" href="style.css" />
 </head>
 <body>
-  <canvas id="pong"></canvas>
+  <div id="game-wrap">
+    <canvas id="pong"></canvas>
+    <div id="score-overlay">
+      <span id="score-player">0</span>
+      <span id="score-sep">:</span>
+      <span id="score-ai">0</span>
+    </div>
+  </div>
   <div id="controls">
     <label>
       <span>Ball Speed</span>
@@ -25,6 +32,7 @@
       <span id="paddleVal">130</span>
     </label>
   </div>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
   <script src="game.js"></script>
 </body>
 </html>

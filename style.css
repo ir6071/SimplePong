@@ -1,11 +1,7 @@
-* {
-  margin: 0;
-  padding: 0;
-  box-sizing: border-box;
-}
+* { margin: 0; padding: 0; box-sizing: border-box; }
 
 body {
-  background: #000;
+  background: #010510;
   display: flex;
   flex-direction: column;
   justify-content: center;
@@ -15,11 +11,43 @@ body {
   padding: 8px;
 }
 
+#game-wrap {
+  position: relative;
+  width: 100%;
+  max-width: 800px;
+}
+
 canvas {
   display: block;
-  max-width: 100%;
+  width: 100%;
   touch-action: none;
-  flex-shrink: 1;
+}
+
+#score-overlay {
+  position: absolute;
+  top: 14px;
+  left: 0;
+  right: 0;
+  display: flex;
+  justify-content: center;
+  gap: 18px;
+  font: bold 52px monospace;
+  pointer-events: none;
+  user-select: none;
+}
+
+#score-player {
+  color: #99ddff;
+  text-shadow: 0 0 10px #44aaff, 0 0 22px #44aaff;
+}
+
+#score-sep {
+  color: #334455;
+}
+
+#score-ai {
+  color: #ffbb99;
+  text-shadow: 0 0 10px #ff6644, 0 0 22px #ff6644;
 }
 
 #controls {
@@ -35,7 +63,7 @@ canvas {
   display: flex;
   align-items: center;
   gap: 8px;
-  color: #aaa;
+  color: #667788;
   font: 13px/1 monospace;
   white-space: nowrap;
 }
@@ -46,7 +74,7 @@ canvas {
   cursor: pointer;
 }
 
-#controls span:last-child {
+#controls label span:last-child {
   min-width: 28px;
-  color: #eee;
+  color: #aabbcc;
 }
