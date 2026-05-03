@@ -6,8 +6,8 @@ const H = 500;
 canvas.width = W;
 canvas.height = H;
 
-const PADDLE_W = 12;
-const PADDLE_H = 80;
+const PADDLE_W = 14;
+const PADDLE_H = 130;
 const BALL_SIZE = 10;
 const PADDLE_SPEED = 5;
 const AI_SPEED = 4;
@@ -117,6 +117,20 @@ function draw() {
   ctx.fillStyle = '#f64';
   ctx.fillRect(W - 20 - PADDLE_W, state.ai.y, PADDLE_W, PADDLE_H);
 
+  // Center touch zone indicator (mobile guide)
+  const handleX = W / 2;
+  const handleY = state.touchY !== null ? state.touchY : H / 2;
+  ctx.strokeStyle = state.touchY !== null ? 'rgba(255,255,255,0.35)' : 'rgba(255,255,255,0.12)';
+  ctx.lineWidth = 3;
+  ctx.beginPath();
+  ctx.moveTo(handleX, handleY - 40);
+  ctx.lineTo(handleX, handleY + 40);
+  ctx.stroke();
+  ctx.fillStyle = state.touchY !== null ? 'rgba(255,255,255,0.5)' : 'rgba(255,255,255,0.2)';
+  ctx.beginPath();
+  ctx.arc(handleX, handleY, 14, 0, Math.PI * 2);
+  ctx.fill();
+
   // Ball
   ctx.fillStyle = '#fff';
   ctx.beginPath();
@@ -140,7 +154,14 @@ document.addEventListener('keyup', e => {
   if (e.key === 'ArrowDown' || e.key === 's' || e.key === 'S') state.keys.down = false;
 });
 
-// Touch — map finger Y on canvas to paddle position
+// Touch — drag anywhere on canvas; finger Y controls paddle
+canvas.addEventListener('touchstart', e => {
+  e.preventDefault();
+  const rect = canvas.getBoundingClientRect();
+  const scaleY = H / rect.height;
+  state.touchY = (e.touches[0].clientY - rect.top) * scaleY;
+}, { passive: false });
+
 canvas.addEventListener('touchmove', e => {
   e.preventDefault();
   const rect = canvas.getBoundingClientRect();
