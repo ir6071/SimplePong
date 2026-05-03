@@ -12,6 +12,7 @@ let BALL_SIZE = 10;
 let SPEED_MULT = 1;
 const PADDLE_SPEED = 5;
 const AI_SPEED = 4;
+const CURVE = 1.4; // surface curvature: higher = more extreme angle at paddle edges
 
 const state = {
   ball: { x: W / 2, y: H / 2, vx: 4, vy: 3 },
@@ -58,14 +59,24 @@ function update() {
   if (b.y - BALL_SIZE / 2 <= 0) { b.y = BALL_SIZE / 2; b.vy = Math.abs(b.vy); }
   if (b.y + BALL_SIZE / 2 >= H) { b.y = H - BALL_SIZE / 2; b.vy = -Math.abs(b.vy); }
 
+  // Reflect ball off a curved paddle surface.
+  // normalXDir: +1 for left paddle (normal points right), -1 for right paddle.
+  function curvedBounce(paddleY, normalXDir, pushX) {
+    const t = Math.max(-1, Math.min(1, (b.y - (paddleY + PADDLE_H / 2)) / (PADDLE_H / 2)));
+    const mag = Math.sqrt(1 + CURVE * CURVE * t * t);
+    const nx = normalXDir / mag;
+    const ny = (CURVE * t) / mag;
+    const dot = b.vx * nx + b.vy * ny;
+    b.vx = (b.vx - 2 * dot * nx) * 1.05;
+    b.vy = (b.vy - 2 * dot * ny) * 1.05;
+    b.x = pushX;
+  }
+
   // Player paddle collision (left side, x=20)
   const px = 20 + PADDLE_W;
   if (b.vx < 0 && b.x - BALL_SIZE / 2 <= px && b.x + BALL_SIZE / 2 >= 20) {
     if (b.y + BALL_SIZE / 2 >= state.player.y && b.y - BALL_SIZE / 2 <= state.player.y + PADDLE_H) {
-      b.x = px + BALL_SIZE / 2;
-      b.vx = Math.abs(b.vx) * 1.05;
-      const offset = (b.y - (state.player.y + PADDLE_H / 2)) / (PADDLE_H / 2);
-      b.vy = offset * 5;
+      curvedBounce(state.player.y, 1, px + BALL_SIZE / 2);
     }
   }
 
@@ -73,10 +84,7 @@ function update() {
   const ax = W - 20 - PADDLE_W;
   if (b.vx > 0 && b.x + BALL_SIZE / 2 >= ax && b.x - BALL_SIZE / 2 <= W - 20) {
     if (b.y + BALL_SIZE / 2 >= state.ai.y && b.y - BALL_SIZE / 2 <= state.ai.y + PADDLE_H) {
-      b.x = ax - BALL_SIZE / 2;
-      b.vx = -Math.abs(b.vx) * 1.05;
-      const offset = (b.y - (state.ai.y + PADDLE_H / 2)) / (PADDLE_H / 2);
-      b.vy = offset * 5;
+      curvedBounce(state.ai.y, -1, ax - BALL_SIZE / 2);
     }
   }
 
@@ -110,13 +118,27 @@ function draw() {
   ctx.fillText(state.score.player, W / 4, 60);
   ctx.fillText(state.score.ai, (3 * W) / 4, 60);
 
-  // Player paddle
-  ctx.fillStyle = '#4af';
-  ctx.fillRect(20, state.player.y, PADDLE_W, PADDLE_H);
+  // Draw a paddle with the face side bulging outward
+  function drawPaddle(x, y, color, faceRight) {
+    const bulge = PADDLE_W * 1.2;
+    const mx = faceRight ? x + PADDLE_W : x;
+    const bx = faceRight ? mx + bulge : mx - bulge;
+    ctx.fillStyle = color;
+    ctx.beginPath();
+    ctx.moveTo(x, y);
+    ctx.lineTo(x + PADDLE_W, y);
+    ctx.quadraticCurveTo(bx, y + PADDLE_H / 2, faceRight ? x + PADDLE_W : x, y + PADDLE_H);
+    if (faceRight) {
+      ctx.lineTo(x, y + PADDLE_H);
+    } else {
+      ctx.lineTo(x + PADDLE_W, y + PADDLE_H);
+    }
+    ctx.closePath();
+    ctx.fill();
+  }
 
-  // AI paddle
-  ctx.fillStyle = '#f64';
-  ctx.fillRect(W - 20 - PADDLE_W, state.ai.y, PADDLE_W, PADDLE_H);
+  drawPaddle(20, state.player.y, '#4af', true);
+  drawPaddle(W - 20 - PADDLE_W, state.ai.y, '#f64', false);
 
   // Center touch zone indicator (mobile guide)
   const handleX = W / 2;
