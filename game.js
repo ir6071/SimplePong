@@ -7,8 +7,9 @@ canvas.width = W;
 canvas.height = H;
 
 const PADDLE_W = 14;
-const PADDLE_H = 130;
-const BALL_SIZE = 10;
+let PADDLE_H = 130;
+let BALL_SIZE = 10;
+let SPEED_MULT = 1;
 const PADDLE_SPEED = 5;
 const AI_SPEED = 4;
 
@@ -50,8 +51,8 @@ function update() {
   else if (aiCenter > b.y + 5) state.ai.y = clampPaddle(state.ai.y - AI_SPEED);
 
   // Move ball
-  b.x += b.vx;
-  b.y += b.vy;
+  b.x += b.vx * SPEED_MULT;
+  b.y += b.vy * SPEED_MULT;
 
   // Top/bottom wall bounce
   if (b.y - BALL_SIZE / 2 <= 0) { b.y = BALL_SIZE / 2; b.vy = Math.abs(b.vy); }
@@ -170,5 +171,19 @@ canvas.addEventListener('touchmove', e => {
 }, { passive: false });
 
 canvas.addEventListener('touchend', () => { state.touchY = null; });
+
+// Sliders
+function wire(id, valId, onChange) {
+  const el = document.getElementById(id);
+  const label = document.getElementById(valId);
+  el.addEventListener('input', () => { label.textContent = el.value; onChange(Number(el.value)); });
+}
+wire('speedSlider', 'speedVal', v => { SPEED_MULT = v / 5; });
+wire('ballSlider',  'ballVal',  v => { BALL_SIZE = v; });
+wire('paddleSlider','paddleVal',v => {
+  PADDLE_H = v;
+  state.player.y = clampPaddle(state.player.y);
+  state.ai.y = clampPaddle(state.ai.y);
+});
 
 loop();
